@@ -3,6 +3,7 @@ Here is my Development of CA1 for Cloud.
 
 
 # App Info:
+https://client-information-db.appspot.com
 
 Project ID: client-information-db
 SQL location: europe-west1-b
