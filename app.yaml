@@ -9,4 +9,4 @@ automatic_scaling:
 env_variables:
   NODE_ENV: production
   DATABASE_URL: 'sm://client-information-db/DATABASE_URL'
-cloud_sql_instances: client-information-db:europe-west1:client-db-instance
+  cloud_sql_instances: client-information-db:europe-west1:client-db-instance
