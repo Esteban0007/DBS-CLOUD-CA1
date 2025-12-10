@@ -26,7 +26,7 @@ steps:
         apt-get update -qq && apt-get install -y -qq nodejs npm > /dev/null 2>&1
 
         echo "Running migrations..."
-        DATABASE_URL=$$DATABASE_URL npx sequelize-cli db:migrate
+        DATABASE_URL=$$DATABASE_URL npx sequelize-cli db:migrate --env production
 
         echo "Stopping proxy..."
         kill $$PROXY_PID || true
