@@ -91,7 +91,10 @@ let server;
 
     // Sync models
     await Visit.sync();
-    
+
+    app.get('/', (_req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    });
 
     // Health check endpoint for Google Cloud Platform monitoring
     // GCP uses this to verify the app is running correctly and database is connected
