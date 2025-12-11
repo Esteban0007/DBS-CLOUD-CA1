@@ -5,8 +5,7 @@ const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const axios = require('axios');
-require('dotenv').config(); // For local development
-
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -32,11 +31,11 @@ app.use(
 // Rate limiting: Prevent abuse by limiting requests per IP address
 // Students learn about resource protection and API quota management
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Middleware for static files
@@ -71,20 +70,22 @@ let server;
     // Initialize Sequelize
     // Note: When using Cloud SQL Unix socket, SSL is not needed (proxy handles encryption)
     if (process.env.NODE_ENV === 'production') {
-    sequelize = new Sequelize('client_info', 'root', 'aU<.Mna#X0o?T+Sp', {
-        dialect: 'postgres',
-        host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`, 
-        dialectOptions: {
-            socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`
-        },
-        logging: false 
-    });
-} else {
-    // local
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-        dialect: 'postgres',
-    });
-}
+        // CORRECCIÓN CLAVE: Usar host y socketPath para Cloud SQL Unix
+        // REEMPLAZA 'YOUR_DB_NAME', 'YOUR_USER', y 'YOUR_PASSWORD' con tus valores
+        sequelize = new Sequelize('client_info', 'root', 'aU<.Mna#X0o?T+Sp', {
+            dialect: 'postgres',
+            host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`, 
+            dialectOptions: {
+                socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`
+            },
+            logging: false
+        });
+    } else {
+        // Desarrollo local: usa la URL normal
+        sequelize = new Sequelize(process.env.DATABASE_URL, {
+            dialect: 'postgres',
+        });
+    }
 
     // Define the Visit model
     Visit = sequelize.define('Visit', {
@@ -235,31 +236,31 @@ let server;
       res.sendFile(path.join(__dirname, 'public', 'logs.html'));
     });
 
-    // Start the server AFTER all routes are registered
-    server = app.listen(port, () => {
-      console.log(`App running at http://localhost:${port}`);
-    });
-
-    // Graceful shutdown handler for cloud environments
-    // When GCP stops the instance, it sends SIGTERM signal
-    // This ensures database connections are closed properly before shutdown
-    process.on('SIGTERM', async () => {
-      console.log('SIGTERM signal received: closing HTTP server');
-      server.close(async () => {
-        console.log('HTTP server closed');
-        try {
-          if (sequelize) await sequelize.close();
-          console.log('Database connection closed');
-          process.exit(0);
-        } catch (error) {
-          console.error('Error closing database connection:', error.message);
-          process.exit(1);
-        }
-      });
-    });
     
   } catch (error) {
     console.error('Failed to initialize application:', error.message);
-    process.exit(1);
   }
 })();
+
+// Start the server
+server = app.listen(port, () => {
+  console.log(`App running at http://localhost:${port}`);
+});
+
+// Graceful shutdown handler for cloud environments
+// When GCP stops the instance, it sends SIGTERM signal
+// This ensures database connections are closed properly before shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(async () => {
+    console.log('HTTP server closed');
+    try {
+      if (sequelize) await sequelize.close(); 
+      console.log('Database connection closed');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error closing database connection:', error.message);
+      process.exit(1);
+    }
+  });
+});
