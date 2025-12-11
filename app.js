@@ -61,8 +61,10 @@ let server;
         
         sequelize = new Sequelize('client_info', 'root', 'aU<.Mna#X0o?T+Sp', {
             dialect: 'postgres',
-            host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`, 
+            // CAMBIO CLAVE: Usar 'localhost' cuando se especifica socketPath.
+            host: 'localhost', 
             dialectOptions: {
+                // El socketPath debe seguir siendo la ruta completa del Cloud SQL Proxy
                 socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`
             },
             logging: false
