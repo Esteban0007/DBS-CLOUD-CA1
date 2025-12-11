@@ -57,10 +57,23 @@ let server;
       }
     }
 
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-      dialect: 'postgres',
-      logging: false,
-    });
+    if (process.env.NODE_ENV === 'production') {
+        
+        sequelize = new Sequelize('client_info', 'root', 'aU<.Mna#X0o?T+Sp', {
+            dialect: 'postgres',
+            host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`, 
+            dialectOptions: {
+                socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`
+            },
+            logging: false
+        });
+    } else {
+        
+        sequelize = new Sequelize(process.env.DATABASE_URL, {
+            dialect: 'postgres',
+            logging: false,
+        });
+    }
 
     Visit = sequelize.define('Visit', {
       ip: { type: DataTypes.STRING },
