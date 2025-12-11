@@ -222,31 +222,31 @@ let server;
       res.sendFile(path.join(__dirname, 'public', 'logs.html'));
     });
 
+    // Start the server AFTER all routes are registered
+    server = app.listen(port, () => {
+      console.log(`App running at http://localhost:${port}`);
+    });
+
+    // Graceful shutdown handler for cloud environments
+    // When GCP stops the instance, it sends SIGTERM signal
+    // This ensures database connections are closed properly before shutdown
+    process.on('SIGTERM', async () => {
+      console.log('SIGTERM signal received: closing HTTP server');
+      server.close(async () => {
+        console.log('HTTP server closed');
+        try {
+          if (sequelize) await sequelize.close();
+          console.log('Database connection closed');
+          process.exit(0);
+        } catch (error) {
+          console.error('Error closing database connection:', error.message);
+          process.exit(1);
+        }
+      });
+    });
     
   } catch (error) {
     console.error('Failed to initialize application:', error.message);
+    process.exit(1);
   }
 })();
-
-// Start the server
-server = app.listen(port, () => {
-  console.log(`App running at http://localhost:${port}`);
-});
-
-// Graceful shutdown handler for cloud environments
-// When GCP stops the instance, it sends SIGTERM signal
-// This ensures database connections are closed properly before shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(async () => {
-    console.log('HTTP server closed');
-    try {
-      if (sequelize) await sequelize.close(); // Se añade 'if (sequelize)' para evitar errores si la DB nunca conectó
-      console.log('Database connection closed');
-      process.exit(0);
-    } catch (error) {
-      console.error('Error closing database connection:', error.message);
-      process.exit(1);
-    }
-  });
-});
