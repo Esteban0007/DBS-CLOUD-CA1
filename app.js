@@ -70,9 +70,21 @@ let server;
 
     // Initialize Sequelize
     // Note: When using Cloud SQL Unix socket, SSL is not needed (proxy handles encryption)
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-      dialect: 'postgres',
+    if (process.env.NODE_ENV === 'production') {
+    sequelize = new Sequelize('client_info', 'root', 'aU<.Mna#X0o?T+Sp', {
+        dialect: 'postgres',
+        host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`, 
+        dialectOptions: {
+            socketPath: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`
+        },
+        logging: false 
     });
+} else {
+    // local
+    sequelize = new Sequelize(process.env.DATABASE_URL, {
+        dialect: 'postgres',
+    });
+}
 
     // Define the Visit model
     Visit = sequelize.define('Visit', {
