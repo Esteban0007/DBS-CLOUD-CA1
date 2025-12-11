@@ -53,6 +53,7 @@ async function getSecret(secretName) {
 
 let sequelize;
 let Visit;
+let server; 
 
 // Main application logic
 (async () => {
@@ -90,7 +91,7 @@ let Visit;
 
     // Sync models
     await Visit.sync();
-
+    
     // Routes
     app.get('/', (req, res) => {
       res.send('App is running and connected to the database.');
@@ -225,12 +226,11 @@ let Visit;
     
   } catch (error) {
     console.error('Failed to initialize application:', error.message);
-    process.exit(1);
   }
 })();
 
 // Start the server
-const server = app.listen(port, () => {
+server = app.listen(port, () => {
   console.log(`App running at http://localhost:${port}`);
 });
 
@@ -242,7 +242,7 @@ process.on('SIGTERM', async () => {
   server.close(async () => {
     console.log('HTTP server closed');
     try {
-      await sequelize.close();
+      if (sequelize) await sequelize.close(); // Se añade 'if (sequelize)' para evitar errores si la DB nunca conectó
       console.log('Database connection closed');
       process.exit(0);
     } catch (error) {
