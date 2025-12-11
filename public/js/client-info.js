@@ -1,8 +1,12 @@
 // public/js/client-info.js
 
 fetch('/api/client-info')
-  .then(response => response.json())
-  .then(data => {
+ .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })  .then(data => {
     document.getElementById('ip').textContent = data.ip;
     document.getElementById('browser').textContent = data.userAgent;
     
