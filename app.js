@@ -50,6 +50,10 @@ async function getSecret(secretName) {
   return version.payload.data.toString();
 }
 
+
+let sequelize;
+let Visit;
+
 // Main application logic
 (async () => {
   try {
@@ -64,12 +68,12 @@ async function getSecret(secretName) {
 
     // Initialize Sequelize
     // Note: When using Cloud SQL Unix socket, SSL is not needed (proxy handles encryption)
-    const sequelize = new Sequelize(process.env.DATABASE_URL, {
+    sequelize = new Sequelize(process.env.DATABASE_URL, {
       dialect: 'postgres',
     });
 
     // Define the Visit model
-    const Visit = sequelize.define('Visit', {
+    Visit = sequelize.define('Visit', {
       ip: { type: DataTypes.STRING },
       user_agent: { type: DataTypes.TEXT },
       city: { type: DataTypes.STRING },
